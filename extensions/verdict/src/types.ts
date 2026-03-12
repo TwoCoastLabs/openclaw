@@ -1,14 +1,28 @@
-/** Verdict policy engine request/response types. */
+/**
+ * Verdict policy engine request/response types.
+ *
+ * These types mirror the Verdict gateway's Go structs in
+ * `gateway/internal/model/{request,response}.go`. Any schema changes in
+ * Verdict must be reflected here to keep the contract in sync.
+ */
 
 // --- Request types ---
 
+/**
+ * Context sent alongside every policy evaluation request.
+ *
+ * - `principal`: identity of the user/entity initiating the action.
+ * - `agent_role`: role of the agent (used by policies for role-based gating).
+ * - `session_id`: current conversation/session identifier.
+ * - `identity_verified`: whether the principal's identity has been verified.
+ * - `extra`: open-ended bag for domain-specific context (e.g. customer tier,
+ *   consent flags, department). Policies reference these via `input.context.extra.*`.
+ */
 export type ActionContext = {
   principal: string;
   agent_role: string;
   session_id: string;
   identity_verified: boolean;
-  customer_consent?: Record<string, boolean>;
-  customer_tier?: string;
   extra?: Record<string, unknown>;
 };
 
@@ -39,22 +53,29 @@ export type Violation = {
   sop_ref?: string;
 };
 
+/**
+ * A suggested repair action returned by a REQUIRE_CHANGES decision.
+ *
+ * Only `op` is guaranteed by the Verdict schema. All other fields are
+ * policy-defined and vary by repair operation. Common fields are typed
+ * explicitly for convenience; domain-specific fields land in the index
+ * signature. See Verdict's `gateway/internal/model/response.go` RepairAction.
+ */
 export type RepairAction = {
+  /** Repair operation identifier (e.g. "cap_value", "redact", "add_approval", "escalate"). */
   op: string;
-  role?: string;
+  /** Human-readable explanation of why the repair is needed. */
   reason?: string;
-  threshold?: number;
-  requested_amount?: number;
+  /** Affected argument fields (e.g. ["args.amount"]). */
   fields?: string[];
-  consent_type?: string;
-  fallback?: string;
-  from?: string;
-  to?: string;
-  disclosure_id?: string;
-  target?: string;
-  source?: string;
-  customer_tier?: string;
+  /** Numeric ceiling for cap_value repairs. */
   max_value?: number;
+  /** Role required for approval/escalation repairs. */
+  role?: string;
+  /** Target queue/entity for escalation. */
+  target?: string;
+  /** Additional policy-defined properties. */
+  [key: string]: unknown;
 };
 
 export type Obligation = {

@@ -154,8 +154,7 @@ export function createBeforeToolCallHook(
         agent_role: config.agentRole ?? "default",
         session_id: ctx.sessionId ?? "",
         identity_verified: config.identityVerified ?? false,
-        customer_tier: config.customerTier,
-        extra: config.contextExtra,
+        extra: config.extra,
       },
       timestamp: new Date().toISOString(),
     };
