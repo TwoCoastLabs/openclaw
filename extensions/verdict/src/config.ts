@@ -30,12 +30,11 @@ export const verdictConfigSchema = Type.Object({
     Type.Boolean({ description: "Identity verification status", default: false }),
   ),
 
-  /** Customer tier for policy evaluation (e.g., "standard", "premium"). */
-  customerTier: Type.Optional(Type.String({ description: "Customer tier" })),
-
-  /** Extra context fields passed to every policy evaluation. */
-  contextExtra: Type.Optional(
-    Type.Record(Type.String(), Type.Unknown(), { description: "Extra context fields" }),
+  /** Domain-specific context fields passed to every policy evaluation (e.g., customer_tier, department). Policies reference these via input.context.extra.* */
+  extra: Type.Optional(
+    Type.Record(Type.String(), Type.Unknown(), {
+      description: "Extra context fields for policies",
+    }),
   ),
 
   /** Tool names to skip policy evaluation for. */
@@ -52,7 +51,6 @@ export type VerdictPluginConfig = {
   principal?: string;
   agentRole?: string;
   identityVerified?: boolean;
-  customerTier?: string;
-  contextExtra?: Record<string, unknown>;
+  extra?: Record<string, unknown>;
   skipTools?: string[];
 };
