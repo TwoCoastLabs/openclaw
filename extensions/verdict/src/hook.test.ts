@@ -171,8 +171,7 @@ describe("createBeforeToolCallHook", () => {
       principal: "admin@corp.com",
       agentRole: "L2_support",
       identityVerified: true,
-      customerTier: "premium",
-      contextExtra: { department: "finance" },
+      extra: { customer_tier: "premium", department: "finance" },
     });
     await hook(event, ctx);
 
@@ -180,7 +179,6 @@ describe("createBeforeToolCallHook", () => {
     expect(callArg.context.principal).toBe("admin@corp.com");
     expect(callArg.context.agent_role).toBe("L2_support");
     expect(callArg.context.identity_verified).toBe(true);
-    expect(callArg.context.customer_tier).toBe("premium");
-    expect(callArg.context.extra).toEqual({ department: "finance" });
+    expect(callArg.context.extra).toEqual({ customer_tier: "premium", department: "finance" });
   });
 });
