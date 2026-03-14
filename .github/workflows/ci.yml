@@ -138,7 +138,7 @@ jobs:
 
   checks:
     needs: [docs-scope, changed-scope]
-    if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')
+    if: github.repository == 'openclaw/openclaw' && needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -236,7 +236,7 @@ jobs:
   compat-node22:
     name: "compat-node22"
     needs: [docs-scope, changed-scope]
-    if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')
+    if: github.repository == 'openclaw/openclaw' && needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -294,6 +294,7 @@ jobs:
         run: python -m pytest -q skills
 
   secrets:
+    if: github.repository == 'openclaw/openclaw'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -362,7 +363,7 @@ jobs:
 
   checks-windows:
     needs: [docs-scope, changed-scope]
-    if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_windows == 'true')
+    if: github.repository == 'openclaw/openclaw' && needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_windows == 'true')
     runs-on: windows-latest
     timeout-minutes: 45
     env:
