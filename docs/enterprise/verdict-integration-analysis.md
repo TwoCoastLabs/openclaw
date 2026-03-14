@@ -6,7 +6,7 @@ Verdict is an **Agent Policy Engine** — a deterministic gateway that evaluates
 
 - **ALLOW** — proceed
 - **DENY** — blocked
-- **REQUIRE_CHANGES** — proceed *if* the agent applies structured repair hints (e.g., "add manager approval", "redact PII field", "obtain consent first")
+- **REQUIRE_CHANGES** — proceed _if_ the agent applies structured repair hints (e.g., "add manager approval", "redact PII field", "obtain consent first")
 
 Policies are authored in a YAML DSL (or raw Rego), compiled to OPA bundles, and evaluated locally in <5ms. Every decision carries audit evidence linked back to SOP section references.
 
@@ -29,15 +29,15 @@ Decision: ALLOW / DENY / REQUIRE_CHANGES
 
 ### Three Categories of Policy
 
-| Category | Examples | Owner |
-|----------|----------|-------|
-| **Security** | Tool allowlists, PII redaction, least-privilege access | Security Engineering |
-| **Business Logic** | Discount limits, refund thresholds, escalation rules, SLA terms | Product / Business Ops |
-| **Legal/Regulatory** | Consent before marketing, required disclosures, data residency | Compliance / Legal |
+| Category             | Examples                                                        | Owner                  |
+| -------------------- | --------------------------------------------------------------- | ---------------------- |
+| **Security**         | Tool allowlists, PII redaction, least-privilege access          | Security Engineering   |
+| **Business Logic**   | Discount limits, refund thresholds, escalation rules, SLA terms | Product / Business Ops |
+| **Legal/Regulatory** | Consent before marketing, required disclosures, data residency  | Compliance / Legal     |
 
 ### Why REQUIRE_CHANGES Matters
 
-Most policy engines return allow/deny. Business and legal rules rarely mean "stop" — they mean "you can do this *if* you first obtain consent / add a disclosure / get approval / follow the correct procedure." REQUIRE_CHANGES with structured repair hints lets agents self-correct rather than dead-end.
+Most policy engines return allow/deny. Business and legal rules rarely mean "stop" — they mean "you can do this _if_ you first obtain consent / add a disclosure / get approval / follow the correct procedure." REQUIRE_CHANGES with structured repair hints lets agents self-correct rather than dead-end.
 
 ---
 
@@ -45,16 +45,16 @@ Most policy engines return allow/deny. Business and legal rules rarely mean "sto
 
 OpenClaw implements multi-layer permission enforcement:
 
-| Layer | Mechanism |
-|-------|-----------|
-| Gateway auth | Token/password/tailscale roles (operator vs node) |
-| Tool policy pipeline | Profile > global allow/deny > provider > agent > group > subagent |
-| `before_tool_call` hooks | Plugin-based tool call interception and modification |
-| Owner-only flags | Restrict sensitive tools to owner senders |
-| Tool loop detection | Warn/block repetitive tool calls |
-| HTTP hard-deny list | Extra restrictions for non-interactive surfaces |
-| Exec approvals | Operator confirmation for dangerous ops |
-| Security audit CLI | Detect misconfig and hardening gaps |
+| Layer                    | Mechanism                                                         |
+| ------------------------ | ----------------------------------------------------------------- |
+| Gateway auth             | Token/password/tailscale roles (operator vs node)                 |
+| Tool policy pipeline     | Profile > global allow/deny > provider > agent > group > subagent |
+| `before_tool_call` hooks | Plugin-based tool call interception and modification              |
+| Owner-only flags         | Restrict sensitive tools to owner senders                         |
+| Tool loop detection      | Warn/block repetitive tool calls                                  |
+| HTTP hard-deny list      | Extra restrictions for non-interactive surfaces                   |
+| Exec approvals           | Operator confirmation for dangerous ops                           |
+| Security audit CLI       | Detect misconfig and hardening gaps                               |
 
 Key files:
 
@@ -71,7 +71,7 @@ Key files:
 
 OpenClaw's current system is **identity-and-permission-based** (who can use what tool). It lacks:
 
-1. **Content-aware policy evaluation** — no inspection of tool call *arguments* (e.g., "refund amount > $200 requires manager approval")
+1. **Content-aware policy evaluation** — no inspection of tool call _arguments_ (e.g., "refund amount > $200 requires manager approval")
 2. **Business/legal rule enforcement** — discount limits, consent requirements, SLA terms, regulatory obligations cannot be expressed
 3. **Structured repair hints** — when a tool call is blocked, agents get a boolean deny, not actionable guidance on how to fix it
 4. **Audit trail with SOP traceability** — no mapping from "agent did X" back to "because policy Y implements SOP section Z"
@@ -119,14 +119,14 @@ Embed OPA/Rego evaluation directly in the OpenClaw gateway process via Wasm to a
 
 Build enterprise-grade features on top of Verdict integration:
 
-| Feature | Value |
-|---------|-------|
-| **Policy management UI** | Web UI for compliance officers to author/review YAML policies without touching code |
-| **Audit log export** | Every tool call decision in a searchable audit store with SOP cross-references |
-| **Replay/backtesting** | "What would happen if we deploy this new policy?" against historical agent sessions |
-| **Policy-as-code in repo** | `.openclaw/policies/*.yaml` checked into corporate repos, versioned, PR-reviewed |
-| **Compliance dashboard** | Real-time view of policy evaluations, violation rates, self-correction success |
-| **SOP-to-policy pipeline** | Feed corporate SOPs through LLM-assisted draft, review, and deploy |
+| Feature                    | Value                                                                               |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| **Policy management UI**   | Web UI for compliance officers to author/review YAML policies without touching code |
+| **Audit log export**       | Every tool call decision in a searchable audit store with SOP cross-references      |
+| **Replay/backtesting**     | "What would happen if we deploy this new policy?" against historical agent sessions |
+| **Policy-as-code in repo** | `.openclaw/policies/*.yaml` checked into corporate repos, versioned, PR-reviewed    |
+| **Compliance dashboard**   | Real-time view of policy evaluations, violation rates, self-correction success      |
+| **SOP-to-policy pipeline** | Feed corporate SOPs through LLM-assisted draft, review, and deploy                  |
 
 ---
 
@@ -171,10 +171,10 @@ The integration is clean because:
 
 ### Design Decision: Where the Self-Correction Loop Lives
 
-| Option | Pros | Cons |
-|--------|------|------|
-| In the plugin's `before_tool_call` hook | Simpler, transparent to the agent, no core changes | Limited to param modification, agent unaware of why params changed |
-| In the agent's tool execution loop | More flexible, agent-aware repairs, can ask user for missing info | Requires core changes to the agent loop, more complex |
+| Option                                  | Pros                                                              | Cons                                                               |
+| --------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| In the plugin's `before_tool_call` hook | Simpler, transparent to the agent, no core changes                | Limited to param modification, agent unaware of why params changed |
+| In the agent's tool execution loop      | More flexible, agent-aware repairs, can ask user for missing info | Requires core changes to the agent loop, more complex              |
 
 **Recommendation:** Start in the hook for simplicity. Move to the agent loop once adoption proves the model.
 
