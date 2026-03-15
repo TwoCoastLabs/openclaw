@@ -56,10 +56,9 @@ export type Violation = {
 /**
  * A suggested repair action returned by a REQUIRE_CHANGES decision.
  *
- * Only `op` is guaranteed by the Verdict schema. All other fields are
- * policy-defined and vary by repair operation. Common fields are typed
- * explicitly for convenience; domain-specific fields land in the index
- * signature. See Verdict's `gateway/internal/model/response.go` RepairAction.
+ * Only `op`, `reason`, and `fields` are universal. All policy-defined
+ * parameters (e.g. max_value, role, target, threshold) live in `params`.
+ * See Verdict's `gateway/internal/model/response.go` RepairAction.
  */
 export type RepairAction = {
   /** Repair operation identifier (e.g. "cap_value", "redact", "add_approval", "escalate"). */
@@ -68,14 +67,8 @@ export type RepairAction = {
   reason?: string;
   /** Affected argument fields (e.g. ["args.amount"]). */
   fields?: string[];
-  /** Numeric ceiling for cap_value repairs. */
-  max_value?: number;
-  /** Role required for approval/escalation repairs. */
-  role?: string;
-  /** Target queue/entity for escalation. */
-  target?: string;
-  /** Additional policy-defined properties. */
-  [key: string]: unknown;
+  /** Policy-defined parameters for this repair (e.g. max_value, role, target, threshold). */
+  params?: Record<string, unknown>;
 };
 
 export type Obligation = {
@@ -92,6 +85,8 @@ export type AuditInfo = {
   timestamp: string;
   sop_refs?: string[];
   shadow_mode: boolean;
+  tenant?: string;
+  app?: string;
 };
 
 export type PolicyDecision = {
@@ -101,6 +96,8 @@ export type PolicyDecision = {
   suggested_repairs?: RepairAction[];
   obligations?: Obligation[];
   audit: AuditInfo;
+  /** Engine error message (set on evaluation failures with synthetic DENY). */
+  error?: string;
 };
 
 // --- Discovery types ---
@@ -160,9 +157,18 @@ export type PolicyExplanation = {
   obligations?: Array<{ type: string; target?: string; fields?: string[] }>;
 };
 
+export type ToolPoliciesResponse = {
+  tool: string;
+  tool_exists: boolean;
+  policy_count: number;
+  policies: PolicyInfo[];
+  wildcard_note?: string;
+};
+
 export type HealthResponse = {
   status: string;
   bundle_digest: string;
+  policy_count: number;
   eval_count: number;
   p50_ms: number;
   p99_ms: number;

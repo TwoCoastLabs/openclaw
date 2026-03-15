@@ -94,7 +94,7 @@ describe("createBeforeToolCallHook", () => {
       ...allowDecision,
       decision: "REQUIRE_CHANGES",
       violations: [{ policy_id: "cap", severity: "medium", message: "Amount too high" }],
-      suggested_repairs: [{ op: "cap_value", max_value: 200, fields: ["args.amount"] }],
+      suggested_repairs: [{ op: "cap_value", fields: ["args.amount"], params: { max_value: 200 } }],
     };
     mockClient.evaluate.mockResolvedValue(requireChanges);
 
@@ -124,7 +124,7 @@ describe("createBeforeToolCallHook", () => {
       decision: "REQUIRE_CHANGES",
       violations: [{ policy_id: "approval", severity: "high", message: "Needs manager" }],
       suggested_repairs: [
-        { op: "add_approval", role: "manager", reason: "Amount exceeds threshold" },
+        { op: "add_approval", reason: "Amount exceeds threshold", params: { role: "manager" } },
       ],
     };
     mockClient.evaluate.mockResolvedValue(requireChanges);
@@ -162,6 +162,29 @@ describe("createBeforeToolCallHook", () => {
 
     expect(result?.block).toBe(true);
     expect(result?.blockReason).toContain("ECONNREFUSED");
+  });
+
+  it("surfaces engine error in block reason", async () => {
+    const errorDecision: PolicyDecision = {
+      ...allowDecision,
+      decision: "DENY",
+      error: "OPA evaluation timeout after 5000ms",
+      violations: [
+        {
+          policy_id: "system.evaluation_failure",
+          severity: "critical",
+          message: "Policy evaluation failed",
+        },
+      ],
+    };
+    mockClient.evaluate.mockResolvedValue(errorDecision);
+
+    const hook = makeHook();
+    const result = await hook(event, ctx);
+
+    expect(result?.block).toBe(true);
+    expect(result?.blockReason).toContain("OPA evaluation timeout");
+    expect(result?.blockReason).toContain("DENY");
   });
 
   it("passes config context fields to ActionRequest", async () => {
