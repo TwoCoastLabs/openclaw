@@ -46,14 +46,16 @@ function applyAutoRepairs(
   const pending: RepairAction[] = [];
 
   for (const repair of repairs) {
+    const p = repair.params ?? {};
     switch (repair.op) {
       case "cap_value": {
         // Cap a numeric arg to max_value
-        if (repair.max_value != null) {
+        const maxVal = p.max_value;
+        if (typeof maxVal === "number") {
           const argKey = repair.fields?.[0]?.replace(/^args\./, "") ?? "amount";
           const current = repaired[argKey];
-          if (typeof current === "number" && current > repair.max_value) {
-            repaired[argKey] = repair.max_value;
+          if (typeof current === "number" && current > maxVal) {
+            repaired[argKey] = maxVal;
           }
         }
         break;
@@ -124,8 +126,9 @@ function formatBlockReason(decision: PolicyDecision): string {
       if (r.reason) {
         line += `: ${r.reason}`;
       }
-      if (r.role) {
-        line += ` (requires ${r.role})`;
+      const role = r.params?.role;
+      if (typeof role === "string") {
+        line += ` (requires ${role})`;
       }
       parts.push(line);
     }
