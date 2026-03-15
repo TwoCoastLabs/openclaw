@@ -6,6 +6,7 @@ import type {
   HealthResponse,
   PolicyDecision,
   PolicyExplanation,
+  ToolPoliciesResponse,
   TraceSummaryResponse,
 } from "./types.js";
 
@@ -46,8 +47,8 @@ export class VerdictClient {
   }
 
   /** Get policies for a specific tool. */
-  async toolPolicies(toolName: string): Promise<{ tool: string; policies: PolicyExplanation[] }> {
-    return await this.get(`/tools/${encodeURIComponent(toolName)}/policies`);
+  async toolPolicies(toolName: string): Promise<ToolPoliciesResponse> {
+    return await this.get<ToolPoliciesResponse>(`/tools/${encodeURIComponent(toolName)}/policies`);
   }
 
   /** Get trace summary statistics. */

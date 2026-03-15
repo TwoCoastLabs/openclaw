@@ -99,6 +99,10 @@ function applyAutoRepairs(
 function formatBlockReason(decision: PolicyDecision): string {
   const parts: string[] = [`Policy decision: ${decision.decision}`];
 
+  if (decision.error) {
+    parts.push(`Error: ${decision.error}`);
+  }
+
   if (decision.violations?.length) {
     for (const v of decision.violations) {
       let line = `[${v.severity}] ${v.message}`;

@@ -164,6 +164,29 @@ describe("createBeforeToolCallHook", () => {
     expect(result?.blockReason).toContain("ECONNREFUSED");
   });
 
+  it("surfaces engine error in block reason", async () => {
+    const errorDecision: PolicyDecision = {
+      ...allowDecision,
+      decision: "DENY",
+      error: "OPA evaluation timeout after 5000ms",
+      violations: [
+        {
+          policy_id: "system.evaluation_failure",
+          severity: "critical",
+          message: "Policy evaluation failed",
+        },
+      ],
+    };
+    mockClient.evaluate.mockResolvedValue(errorDecision);
+
+    const hook = makeHook();
+    const result = await hook(event, ctx);
+
+    expect(result?.block).toBe(true);
+    expect(result?.blockReason).toContain("OPA evaluation timeout");
+    expect(result?.blockReason).toContain("DENY");
+  });
+
   it("passes config context fields to ActionRequest", async () => {
     mockClient.evaluate.mockResolvedValue(allowDecision);
 

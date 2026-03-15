@@ -23,6 +23,8 @@ export type ActionContext = {
   agent_role: string;
   session_id: string;
   identity_verified: boolean;
+  customer_consent?: Record<string, boolean>;
+  customer_tier?: string;
   extra?: Record<string, unknown>;
 };
 
@@ -74,8 +76,24 @@ export type RepairAction = {
   role?: string;
   /** Target queue/entity for escalation. */
   target?: string;
-  /** Additional policy-defined properties. */
-  [key: string]: unknown;
+  /** Policy threshold that was exceeded. */
+  threshold?: number;
+  /** The requested amount that triggered the violation. */
+  requested_amount?: number;
+  /** Required consent type (e.g. "data_processing"). */
+  consent_type?: string;
+  /** Fallback action when primary repair cannot be applied. */
+  fallback?: string;
+  /** Source tool/field for switch_tool repairs. */
+  from?: string;
+  /** Target tool/field for switch_tool repairs. */
+  to?: string;
+  /** Disclosure identifier for add_disclosure repairs. */
+  disclosure_id?: string;
+  /** Source context for the repair. */
+  source?: string;
+  /** Customer tier relevant to the repair. */
+  customer_tier?: string;
 };
 
 export type Obligation = {
@@ -92,6 +110,8 @@ export type AuditInfo = {
   timestamp: string;
   sop_refs?: string[];
   shadow_mode: boolean;
+  tenant?: string;
+  app?: string;
 };
 
 export type PolicyDecision = {
@@ -101,6 +121,8 @@ export type PolicyDecision = {
   suggested_repairs?: RepairAction[];
   obligations?: Obligation[];
   audit: AuditInfo;
+  /** Engine error message (set on evaluation failures with synthetic DENY). */
+  error?: string;
 };
 
 // --- Discovery types ---
@@ -160,9 +182,18 @@ export type PolicyExplanation = {
   obligations?: Array<{ type: string; target?: string; fields?: string[] }>;
 };
 
+export type ToolPoliciesResponse = {
+  tool: string;
+  tool_exists: boolean;
+  policy_count: number;
+  policies: PolicyInfo[];
+  wildcard_note?: string;
+};
+
 export type HealthResponse = {
   status: string;
   bundle_digest: string;
+  policy_count: number;
   eval_count: number;
   p50_ms: number;
   p99_ms: number;
